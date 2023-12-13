@@ -1,5 +1,7 @@
 import { CommonConstants } from '../common/constant/CommonConstant';
-import { TaskItemBean } from '../viewmodel/DataModel'
+import getCurrentTime from '../common/utils/DateUtil';
+import DataModel, { TaskItemBean } from '../viewmodel/DataModel'
+import ProgressEditPanel from './ProgressEditPanel';
 
 @Component
 export default struct TargetListItem {
@@ -11,6 +13,13 @@ export default struct TargetListItem {
   @Link selectArr: Array<boolean>;
   public index: number = 0;
   @State isExpanded: boolean = false;
+  @State sliderMode: number = CommonConstants.DEFAULT_SLIDER_MODE;
+  @Consume overAllProgressChanged: boolean
+
+  aboutToAppear() {
+    this.latestProgress = this.taskItem?.progressValue;
+    this.updateDate = this.taskItem?.updateDate;
+  }
 
   onClickIndexChanged() {
     if (this.clickIndex !== this.index) {
@@ -22,6 +31,29 @@ export default struct TargetListItem {
     Stack({ alignContent: Alignment.Start }) {
       Column() {
         this.targetItem()
+        if (this.isExpanded) {
+          Blank()
+          ProgressEditPanel({
+            slidingProgress: this.latestProgress,
+            sliderMode: $sliderMode,
+            onCancel: () => this.isExpanded = false,
+            onClickOK: (progress: number): void => {
+              this.latestProgress = progress;
+              this.updateDate = getCurrentTime();
+              let result = DataModel.updateProgress(this.index, this.latestProgress, this.updateDate)
+              if (result) {
+                this.overAllProgressChanged = !this.overAllProgressChanged
+              }
+              this.isExpanded = !this.isExpanded;
+            }
+          })
+            .transition({
+              scale: {
+                x: CommonConstants.TRANSITION_ANIMATION_X,
+                y: CommonConstants.TRANSITION_ANIMATION_Y
+              }
+            })
+        }
       }
       .padding({
         left: $r('app.float.list_padding'),
@@ -29,11 +61,27 @@ export default struct TargetListItem {
         bottom: $r('app.float.list_padding_bottom'),
         right: this.isEditMode ? $r('app.float.list_edit_padding') : $r('app.float.list_padding_right')
       })
-      .height($r('app.float.list_item_height'))
+      .height(this.isExpanded ? $r('app.float.expanded_item_height') : $r('app.float.list_item_height'))
       .width(CommonConstants.FULL_HEIGHT)
       .borderRadius(CommonConstants.LIST_RADIUS)
       .animation({ duration: CommonConstants.DURATION })
-      .backgroundColor(Color.White)
+      .backgroundColor(this.selectArr[this.index] ? $r('app.color.edit_blue') : Color.White)
+      .opacity(
+          this.latestProgress === CommonConstants.SLIDER_MAX_VALUE ?
+        CommonConstants.OPACITY : CommonConstants.NO_OPACITY
+      )
+      .onClick(() => {
+        if (this.sliderMode === CommonConstants.CLICK_SLIDER_MODE) {
+          this.sliderMode = CommonConstants.DEFAULT_SLIDER_MODE;
+          return;
+        }
+        if (!this.isExpanded) {
+          animateTo({ duration: CommonConstants.DURATION }, () => {
+            this.isExpanded = !this.isExpanded;
+          })
+          this.clickIndex = this.index
+        }
+      })
 
       if (this.isEditMode) {
         Row() {

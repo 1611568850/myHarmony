@@ -2,9 +2,14 @@ import { CommonConstants } from '../common/constant/CommonConstant'
 
 @Component
 export default struct TargetInformation {
+  @Prop latestUpdateDate: string;
+  @Prop totalTasksNumber: number;
+  @Prop completedTaskNumber: number;
+
   build() {
     Column() {
       this.TargetItem()
+      this.OverallProgress()
     }
     .padding($r('app.float.target_padding'))
     .width(CommonConstants.MAIN_BOARD_WIDTH)
@@ -35,6 +40,55 @@ export default struct TargetInformation {
       })
       .alignItems(HorizontalAlign.Start)
     }
+  }
+
+  @Builder
+  OverallProgress() {
+    Row() {
+      Column() {
+        Text($r('app.string.overall_progress'))
+          .fontColor($r('app.color.title_black_color'))
+          .fontWeight(CommonConstants.FONT_WEIGHT)
+          .fontSize($r('app.float.button_font'))
+        Row() {
+          Text($r('app.string.latest_updateTime'))
+            .opacityTextStyle()
+          Text(this.latestUpdateDate)
+            .opacityTextStyle()
+        }
+        .margin({
+          top: $r('app.float.text_margin')
+        })
+      }
+      .alignItems(HorizontalAlign.Start)
+
+      Blank()
+      Stack() {
+        Row() {
+          Text(this.completedTaskNumber.toString())
+            .fontSize($r('app.float.progress_font'))
+            .fontWeight(CommonConstants.FONT_WEIGHT)
+            .fontColor($r('app.color.main_blue'))
+          Text(`/${this.totalTasksNumber}`)
+            .fontSize($r('app.float.progress_font'))
+            .fontWeight(CommonConstants.FONT_WEIGHT)
+        }
+
+        Progress({
+          value: this.completedTaskNumber,
+          total: this.totalTasksNumber,
+          type: ProgressType.Ring
+        })
+          .color($r('app.color.main_blue'))
+          .style({
+            strokeWidth: CommonConstants.STROKE_WIDTH
+          })
+          .width($r('app.float.progress_length'))
+      }
+    }
+    .width(CommonConstants.FULL_WIDTH)
+    .height($r('app.float.progress_length'))
+    .margin({ top: $r('app.float.progress_margin_top') })
   }
 }
 

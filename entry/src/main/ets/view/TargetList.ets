@@ -4,11 +4,13 @@ import { CommonConstants } from '../common/constant/CommonConstant';
 
 @Component
 export default struct TargetList {
+  @Consume overAllProgressChanged: boolean;
   @State isEditMode: boolean = false;
   @Link targetData: Array<TaskItemBean>;
   @State selectArray: Array<boolean> = [];
   @State selectAll: boolean = false;
   @State clickIndex: number = CommonConstants.DEFAULT_CLICK_INDEX;
+  onAddClick?: () => void
 
   build() {
     Column() {
@@ -69,18 +71,41 @@ export default struct TargetList {
 
             })
           }
-        })
+        }, (item: TaskItemBean) => JSON.stringify(item))
       }
       .edgeEffect(EdgeEffect.None)
       .margin({ top: $r('app.float.list_margin_top') })
       .width(CommonConstants.FULL_WIDTH)
       .height(CommonConstants.LIST_HEIGHT)
+
+      Blank()
+      if (this.isEditMode) {
+        Button($r('app.string.delete_button'))
+          .opacity(this.isSelectRows() ? CommonConstants.NO_OPACITY : CommonConstants.OPACITY)
+          .enabled(this.isSelectRows() ? true : false)
+          .operateButtonStyle($r('app.color.main_red'))
+          .onClick(() => {
+            this.deleteSelected()
+            this.selectAllOrCancel(false);
+            this.selectAll = false;
+          })
+
+      } else {
+        Button($r('app.string.add_task'))
+          .operateButtonStyle($r('app.color.main_blue'))
+          .onClick(() => {
+            if (this.onAddClick !== undefined) {
+              this.onAddClick()
+            }
+          })
+      }
     }
     .width(CommonConstants.MAIN_BOARD_WIDTH)
     .height(CommonConstants.FULL_HEIGHT)
     .padding({ top: $r('app.float.operate_row_margin') })
   }
 
+  // 计算是否全选的值
   isSelectAll(): boolean {
     if (this.selectArray.length === 0) {
       return false
@@ -92,6 +117,23 @@ export default struct TargetList {
     }
     return false
   }
+
+
+  // 再编辑模式下，判断是否有被选中的taskItem
+  isSelectRows(): boolean {
+    return this.selectArray.filter((selected: boolean) => selected === true).length !== 0;
+  }
+
+  // 删除选中的item
+  deleteSelected() {
+    DataModel.deleteData(this.selectArray)
+    this.targetData = DataModel.getData();
+    this.overAllProgressChanged = !this.overAllProgressChanged
+    this.isEditMode = false
+
+
+  }
+  // 全选或取消
   selectAllOrCancel(selectStatus: boolean) {
     let newSelectArray: Array<boolean> = [];
     this.targetData.forEach(() => {
