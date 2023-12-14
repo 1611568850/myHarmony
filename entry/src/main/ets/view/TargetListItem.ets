@@ -29,6 +29,7 @@ export default struct TargetListItem {
 
   build() {
     Stack({ alignContent: Alignment.Start }) {
+
       Column() {
         this.targetItem()
         if (this.isExpanded) {
@@ -59,7 +60,7 @@ export default struct TargetListItem {
         left: $r('app.float.list_padding'),
         top: $r('app.float.list_padding_top'),
         bottom: $r('app.float.list_padding_bottom'),
-        right: this.isEditMode ? $r('app.float.list_edit_padding') : $r('app.float.list_padding_right')
+        right: !this.isEditMode ? $r('app.float.list_padding_right') : $r('app.float.list_edit_padding')
       })
       .height(this.isExpanded ? $r('app.float.expanded_item_height') : $r('app.float.list_item_height'))
       .width(CommonConstants.FULL_HEIGHT)
@@ -83,20 +84,21 @@ export default struct TargetListItem {
         }
       })
 
-      if (this.isEditMode) {
-        Row() {
-          Checkbox()
-            .select(this.selectArr[this.index])
-            .selectedColor($r('app.color.main_blue'))
-            .width(CommonConstants.CHECKBOX_WIDTH)
-            .margin({ right: $r('app.float.list_padding') })
-            .onChange((isCheck: boolean) => {
-              this.selectArr[this.index] = isCheck;
-            })
-        }
-        .width(CommonConstants.FULL_WIDTH)
-        .justifyContent(FlexAlign.End)
+      Row() {
+        Checkbox()
+          .select(this.selectArr[this.index])
+          .selectedColor($r('app.color.main_blue'))
+          .width(this.isEditMode ? CommonConstants.CHECKBOX_WIDTH : 0)
+          .margin({ right: $r('app.float.list_padding') })
+          .onChange((isCheck: boolean) => {
+            this.selectArr[this.index] = isCheck;
+          })
+          .animation({ duration: CommonConstants.DURATION ,delay:50})
+
       }
+      .width(CommonConstants.FULL_WIDTH)
+      .justifyContent(FlexAlign.End)
+
     }
     .width(CommonConstants.FULL_WIDTH)
   }

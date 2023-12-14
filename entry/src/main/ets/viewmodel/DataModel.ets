@@ -1,3 +1,4 @@
+import { CommonConstants } from '../common/constant/CommonConstant';
 import Logger from '../common/utils/Logger'
 
 const TAG = '[DataModel]';
@@ -16,11 +17,11 @@ export class TaskItemBean {
 
 export class DataModel {
   private targetData: Array<TaskItemBean> = [
-  // {
-  //   taskName: '目标一',
-  //   updateDate: '2023/2/3 12:23:22',
-  //   progressValue: 33
-  // },
+  {
+    taskName: '目标一',
+    updateDate: '2023/2/3 12:23:22',
+    progressValue: 33
+  },
   // {
   //   taskName: '目标二',
   //   updateDate: '2023/2/3 12:23:22',
@@ -49,6 +50,12 @@ export class DataModel {
   deleteData(selectArr: Array<boolean>) {
     if (!selectArr) {
       Logger.error(TAG, 'Failed to delete data because selectArr is ' + selectArr);
+    }
+    let dataLen = this.targetData.length - CommonConstants.ONE_TASK
+    for (let i = dataLen; i >= 0; i--) {
+      if (selectArr[i]) {
+        this.targetData.splice(i, CommonConstants.ONE_TASK)
+      }
     }
 
   }
